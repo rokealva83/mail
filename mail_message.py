@@ -39,9 +39,7 @@ def decode(text):
     """Returns unicode() string conversion of the the given encoded smtp header text"""
     if text:
         text = decode_header(text.replace('\r', ''))
-        # The joining space will not be needed as of Python 3.3
-        # See https://hg.python.org/cpython/rev/8c03fe231877
-        return ' '.join([tools.ustr(x[0], x[1]) for x in text])
+        return ''.join([tools.ustr(x[0], x[1]) for x in text])
 
 class MLStripper(HTMLParser):
     def __init__(self):
@@ -452,7 +450,7 @@ class mail_message(osv.Model):
             exp_domain = domain + [('id', '<', min(message_unload_ids + message_ids))]
         else:
             exp_domain = domain + ['!', ('id', 'child_of', message_unload_ids + parent_tree.keys())]
-        more_count = self.search(cr, uid, exp_domain, context=context, limit=1)
+        more_count = self.search_count(cr, uid, exp_domain, context=context)
         if more_count:
             # inside a thread: prepend
             if parent_id:
@@ -592,8 +590,7 @@ class mail_message(osv.Model):
 
     def _find_allowed_model_wise(self, cr, uid, doc_model, doc_dict, context=None):
         doc_ids = doc_dict.keys()
-        ctx = dict(context or {}, active_test=False)
-        allowed_doc_ids = self.pool[doc_model].search(cr, uid, [('id', 'in', doc_ids)], context=ctx)
+        allowed_doc_ids = self.pool[doc_model].search(cr, uid, [('id', 'in', doc_ids)], context=context)
         return set([message_id for allowed_doc_id in allowed_doc_ids for message_id in doc_dict[allowed_doc_id]])
 
     def _find_allowed_doc_ids(self, cr, uid, model_ids, context=None):
@@ -848,7 +845,7 @@ class mail_message(osv.Model):
             Call mail_notification.notify to manage the email sending
         """
         notification_obj = self.pool.get('mail.notification')
-        message = self.browse(cr, SUPERUSER_ID, newid, context=context)
+        message = self.browse(cr, uid, newid, context=context)
         partners_to_notify = set([])
 
         # all followers of the mail.message document have to be added as partners and notified if a subtype is defined (otherwise: log message)
