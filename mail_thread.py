@@ -61,19 +61,16 @@ class mail_thread(osv.AbstractModel):
         act as a discussion topic on which messages can be attached. Public
         methods are prefixed with ``message_`` in order to avoid name
         collisions with methods of the models that will inherit from this class.
-
         ``mail.thread`` defines fields used to handle and display the
         communication history. ``mail.thread`` also manages followers of
         inheriting classes. All features and expected behavior are managed
         by mail.thread. Widgets has been designed for the 7.0 and following
         versions of OpenERP.
-
         Inheriting classes are not required to implement any method, as the
         default implementation will work for any model. However it is common
         to override at least the ``message_new`` and ``message_update``
         methods (calling ``super``) to add model-specific behavior at
         creation and update of a thread when processing incoming emails.
-
         Options:
             - _mail_flat_thread: if set to True, all messages without parent_id
                 are automatically attached to the first message posted on the
@@ -283,7 +280,6 @@ class mail_thread(osv.AbstractModel):
 
     def _search_followers(self, cr, uid, obj, name, args, context):
         """Search function for message_follower_ids
-
         Do not use with operator 'not in'. Use instead message_is_followers
         """
         fol_obj = self.pool.get('mail.followers')
@@ -630,7 +626,6 @@ class mail_thread(osv.AbstractModel):
             - opens the Inbox with a default search on the conversation if model,
               res_id
             - opens the Inbox with context propagated
-
         """
         if context is None:
             context = {}
@@ -780,7 +775,6 @@ class mail_thread(osv.AbstractModel):
 
     def _message_find_partners(self, cr, uid, message, header_fields=['From'], context=None):
         """ Find partners related to some header fields of the message.
-
             :param string message: an email.message instance """
         s = ', '.join([decode(message.get(h)) for h in header_fields if message.get(h)])
         return filter(lambda x: x, self._find_partner_from_emails(cr, uid, None, tools.email_split(s), context=context))
@@ -839,7 +833,7 @@ class mail_thread(osv.AbstractModel):
         # Private message: should not contain any thread_id
         if not model and thread_id:
             if assert_model:
-                if thread_id: 
+                if thread_id:
                     raise ValueError('Routing: posting a message without model should be with a null res_id (private message), received %s.' % thread_id)
             _warn('posting a message without model should be with a null res_id (private message), received %s resetting thread_id' % thread_id)
             thread_id = 0
@@ -917,7 +911,6 @@ class mail_thread(osv.AbstractModel):
         custom_values and user_id to use for an incoming message.
         Multiple values may be returned, if a message had multiple
         recipients matching existing mail.aliases, for example.
-
         The following heuristics are used, in this order:
              1. If the message replies to an existing thread_id, and
                 properly contains the thread model in the 'In-Reply-To'
@@ -929,7 +922,6 @@ class mail_thread(osv.AbstractModel):
              3. Fallback to the ``model``, ``thread_id`` and ``custom_values``
                 provided.
              4. If all the above fails, raise an exception.
-
            :param string message: an email.message instance
            :param dict message_dict: dictionary holding message variables
            :param string model: the fallback model to use if the message
@@ -943,7 +935,6 @@ class mail_thread(osv.AbstractModel):
                to which this mail should be attached. Only used if the message
                does not reply to an existing thread and does not match any mail alias.
            :return: list of [model, thread_id, custom_values, user_id, alias]
-
         :raises: ValueError, TypeError
         """
         if not isinstance(message, Message):
@@ -1153,16 +1144,13 @@ class mail_thread(osv.AbstractModel):
         """ Process an incoming RFC2822 email message, relying on
             ``mail.message.parse()`` for the parsing operation,
             and ``message_route()`` to figure out the target model.
-
             Once the target model is known, its ``message_new`` method
             is called with the new message (if the thread record did not exist)
             or its ``message_update`` method (if it did).
-
             There is a special case where the target model is False: a reply
             to a private message. In this case, we skip the message_new /
             message_update step, to just post a new message using mail_thread
             message_post.
-
            :param string model: the fallback model to use if the message
                does not match any of the currently configured mail aliases
                (may be None if a matching alias is supposed to be present)
@@ -1221,7 +1209,6 @@ class mail_thread(osv.AbstractModel):
            The default behavior is to create a new record of the corresponding
            model (based on some very basic info extracted from the message).
            Additional behavior may be implemented by overriding this method.
-
            :param dict msg_dict: a map containing the email details and
                                  attachments. See ``message_process`` and
                                 ``mail.message.parse`` for details.
@@ -1339,7 +1326,6 @@ class mail_thread(osv.AbstractModel):
         """Parses a string or email.message.Message representing an
            RFC-2822 email, and returns a generic dict holding the
            message details.
-
            :param message: the message to parse
            :type message: email.message.Message | string | unicode
            :param bool save_original: whether the returned dict
@@ -1349,7 +1335,6 @@ class mail_thread(osv.AbstractModel):
            :return: A dict with the following structure, where each
                     field may not be present if missing in original
                     message::
-
                     { 'message_id': msg_id,
                       'subject': subject,
                       'from': from,
@@ -1463,7 +1448,6 @@ class mail_thread(osv.AbstractModel):
             1 - check in document (model | self, id) followers
             2 - try to find a matching partner that is also an user
             3 - try to find a matching partner
-
             :param list emails: list of email addresses
             :param string model: model to fetch related record; by default self
                 is used.
@@ -1527,7 +1511,6 @@ class mail_thread(osv.AbstractModel):
         """ Convert a list of emails into a list partner_ids and a list
             new_partner_ids. The return value is non conventional because
             it is meant to be used by the mail widget.
-
             :return dict: partner_ids and new_partner_ids """
         mail_message_obj = self.pool.get('mail.message')
         partner_ids = self._find_partner_from_emails(cr, uid, id, emails, context=context)
@@ -1554,7 +1537,6 @@ class mail_thread(osv.AbstractModel):
 
     def _message_preprocess_attachments(self, cr, uid, attachments, attachment_ids, attach_model, attach_res_id, context=None):
         """ Preprocess attachments for mail_thread.message_post() or mail_mail.create().
-
         :param list attachments: list of attachment tuples in the form ``(name,content)``,
                                  where content is NOT base64 encoded
         :param list attachment_ids: a list of attachment ids, not in tomany command form
@@ -1592,7 +1574,6 @@ class mail_thread(osv.AbstractModel):
                      content_subtype='html', **kwargs):
         """ Post a new message in an existing thread, returning the new
             mail.message ID.
-
             :param int thread_id: thread ID to post into, or list with one ID;
                 if False/0, mail.message model will also be set as False
             :param str body: body of the message, usually raw HTML that will
@@ -1603,7 +1584,6 @@ class mail_thread(osv.AbstractModel):
                 parent partners to the message in case of private discussion
             :param tuple(str,str) attachments or list id: list of attachment tuples in the form
                 ``(name,content)``, where content is NOT base64 encoded
-
             Extra keyword arguments will be used as default column values for the
             new mail.message record. Special cases:
                 - attachment_ids: supposed not attached to any document; attach them
@@ -1883,7 +1863,6 @@ class mail_thread(osv.AbstractModel):
 
     def message_auto_subscribe(self, cr, uid, ids, updated_fields, context=None, values=None):
         """ Handle auto subscription. Two methods for auto subscription exist:
-
          - tracked res.users relational fields, such as user_id fields. Those fields
            must be relation fields toward a res.users record, and must have the
            track_visilibity attribute set.
@@ -1891,12 +1870,10 @@ class mail_thread(osv.AbstractModel):
            modified has an header record (such as a project for tasks) whose followers
            can be added as followers of the current records. Example of structure
            with project and task:
-
           - st_project_1.parent_id = st_task_1
           - st_project_1.res_model = 'project.project'
           - st_project_1.relation_field = 'project_id'
           - st_task_1.model = 'project.task'
-
         :param list updated_fields: list of updated fields to track
         :param dict values: updated values; if None, the first record will be browsed
                             to get the values. Added after releasing 7.0, therefore
@@ -2028,18 +2005,16 @@ class mail_thread(osv.AbstractModel):
     def message_change_thread(self, cr, uid, id, new_res_id, new_model, context=None):
         """
         Transfert the list of the mail thread messages from an model to another
-
         :param id : the old res_id of the mail.message
         :param new_res_id : the new res_id of the mail.message
         :param new_model : the name of the new model of the mail.message
-
-        Example :   self.pool.get("crm.lead").message_change_thread(self, cr, uid, 2, 4, "project.issue", context) 
+        Example :   self.pool.get("crm.lead").message_change_thread(self, cr, uid, 2, 4, "project.issue", context)
                     will transfert thread of the lead (id=2) to the issue (id=4)
         """
 
         # get the sbtype id of the comment Message
         subtype_res_id = self.pool.get('ir.model.data').xmlid_to_res_id(cr, uid, 'mail.mt_comment', raise_if_not_found=True)
-        
+
         # get the ids of the comment and none-comment of the thread
         message_obj = self.pool.get('mail.message')
         msg_ids_comment = message_obj.search(cr, uid, [
@@ -2050,9 +2025,9 @@ class mail_thread(osv.AbstractModel):
                     ('model', '=', self._name),
                     ('res_id', '=', id),
                     ('subtype_id', '!=', subtype_res_id)], context=context)
-        
+
         # update the messages
         message_obj.write(cr, uid, msg_ids_comment, {"res_id" : new_res_id, "model" : new_model}, context=context)
         message_obj.write(cr, uid, msg_ids_not_comment, {"res_id" : new_res_id, "model" : new_model, "subtype_id" : None}, context=context)
-        
+
         return True
